@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Galeria de Imagens com Música</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            background-color: #800080;
+            min-height: 100vh;
+        }
+        h1 {
+            color: white;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        #uploadContainer {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        #imageUpload, #musicUpload {
+            display: none;
+        }
+        #uploadLabel, #musicLabel {
+            display: inline-block;
+            padding: 15px 30px;
+            border: 2px solid #fff;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+            cursor: pointer;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 10px;
+        }
+        #uploadLabel:hover, #musicLabel:hover {
+            background-color: #e0e0e0;
+        }
+        .carousel {
+            position: relative;
+            width: 70%;
+            height: 80vh;
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+        }
+        .carousel img {
+            max-width: 95%;
+            max-height: 95%;
+            object-fit: contain;
+            display: none;
+        }
+        .carousel img.active {
+            display: block;
+        }
+        .carousel-buttons {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            pointer-events: none;
+        }
+        .carousel-buttons button {
+            background-color: rgba(0, 0, 0, 0.5);
+            color: white;
+            border: none;
+            padding: 15px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            pointer-events: auto;
+        }
+        #musicControls {
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Galeria de Imagens com Música</h1>
+    <div id="uploadContainer">
+        <label for="imageUpload" id="uploadLabel">Escolher Ficheiros</label>
+        <input type="file" id="imageUpload" multiple>
+        <label for="musicUpload" id="musicLabel">Escolher Música(s)</label>
+        <input type="file" id="musicUpload" accept="audio/*" multiple>
+    </div>
+    <div class="carousel">
+        <div class="carousel-buttons">
+            <button id="prevBtn">❮</button>
+            <button id="nextBtn">❯</button>
+        </div>
+    </div>
+    <div id="musicControls">
+        <button id="startMusicBtn">Start Music</button>
+        <button id="pauseMusicBtn">Pause Music</button>
+        <button id="nextMusicBtn">Next Music</button>
+    </div>
+
+    <script>
+        const imageUpload = document.getElementById('imageUpload');
+        const musicUpload = document.getElementById('musicUpload');
+        const carousel = document.querySelector('.carousel');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const startMusicBtn = document.getElementById('startMusicBtn');
+        const pauseMusicBtn = document.getElementById('pauseMusicBtn');
+        const nextMusicBtn = document.getElementById('nextMusicBtn');
+        const audioElement = new Audio();
+        let images = [];
+        let currentIndex = 0;
+        let musicList = [];
+        let currentTrackIndex = 0;
+
+        
+        function updateCarousel() {
+            carousel.querySelectorAll('img').forEach(img => img.classList.remove('active'));
+            if (images.length > 0) {
+                images[currentIndex].classList.add('active');
+            }
+        }
+
+       
+        imageUpload.addEventListener('change', (event) => {
+            const files = Array.from(event.target.files);
+            images = [];
+            carousel.querySelectorAll('img').forEach(img => img.remove()); 
+
+            files.forEach((file, index) => {
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                if (index === 0) img.classList.add('active'); 
+                carousel.appendChild(img);
+                images.push(img);
+            });
+
+            currentIndex = 0;
+            updateCarousel();
+        });
+
+        // Carregar a(s) música(s)
+        musicUpload.addEventListener('change', (event) => {
+            const files = Array.from(event.target.files);
+            musicList = files.map(file => URL.createObjectURL(file));
+            if (musicList.length > 0) {
+                audioElement.src = musicList[currentTrackIndex];
+            }
+        });
+
+        
+        startMusicBtn.addEventListener('click', () => {
+            if (audioElement.src && audioElement.paused) {
+                audioElement.play();
+            }
+        });
+
+
+        pauseMusicBtn.addEventListener('click', () => {
+            if (!audioElement.paused) {
+                audioElement.pause();
+            }
+        });
+
+       
+        nextMusicBtn.addEventListener('click', () => {
+            if (musicList.length > 0) {
+                currentTrackIndex = (currentTrackIndex + 1) % musicList.length;
+                audioElement.src = musicList[currentTrackIndex];
+                audioElement.play();
+            }
+        });
+
+       
+        prevBtn.addEventListener('click', () => {
+            if (images.length > 0) {
+                images[currentIndex].classList.remove('active');
+                currentIndex = (currentIndex - 1 + images.length) % images.length;
+                updateCarousel();
+            }
+        });
+
+        
+        nextBtn.addEventListener('click', () => {
+            if (images.length > 0) {
+                images[currentIndex].classList.remove('active');
+                currentIndex = (currentIndex + 1) % images.length;
+                updateCarousel();
+            }
+        });
+    </script>
+</body>
+</html>
